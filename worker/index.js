@@ -17,7 +17,7 @@ function json(data, status = 200, origin = "*") {
 
 function corsOrigin(request) {
   const origin = request.headers.get("Origin") || "";
-  return /^https:\/\/cat-yura-game\.github\.io$/.test(origin) || /^http:\/\/localhost(?::\d+)?$/.test(origin)
+  return /^https:\/\/(?:cat-yura-game\.github\.io|(?:www\.)?smartcat\.eu\.cc)$/.test(origin) || /^http:\/\/localhost(?::\d+)?$/.test(origin)
     ? origin
     : "";
 }
