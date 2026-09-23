@@ -74,6 +74,8 @@ a { color: inherit; text-decoration: none; }
 .status { margin-top: 16px; padding: 12px; border: 1px solid #526344; border-radius: 8px; background: #20291f; color: #dcebbd; font-size: 12px; }
 .status.error { border-color: #854a45; background: #2e2221; color: #ffb6ae; }
 .results-section { padding-top: 45px; }
+.review-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; padding: 10px 12px; border: 1px solid #485c3f; border-radius: 9px; background: #1d281e; color: #d7e4cb; font-size: 11px; }
+.review-note button { flex: none; padding: 5px 8px; border: 0; background: transparent; color: var(--accent); font-size: 11px; font-weight: 800; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 15px; }
 .section-kicker { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: 1.4px; }
 .section-heading h2 { margin: 4px 0 0; font-size: 23px; letter-spacing: -.8px; }

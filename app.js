@@ -74,7 +74,7 @@ async function startRecording() {
           const form = new FormData(); form.append("audio", new File([blob], type === "audio/mp4" ? "task.m4a" : "task.webm", { type }));
           const result = await callApi("/voice", form);
           state.tasks = result.tasks.map((task) => ({ ...task, selected: false })); renderTasks();
-          if (state.tasks.length) { $("tasksSection").hidden = false; showStatus(""); $("tasksSection").scrollIntoView({ behavior: "smooth" }); }
+          if (state.tasks.length) { $("voiceReviewNote").hidden = false; $("tasksSection").hidden = false; showStatus(""); $("tasksSection").scrollIntoView({ behavior: "smooth" }); }
           else showStatus("Не удалось услышать задание. Попробуй записать ещё раз в тихом месте.", true);
         } catch (error) { showStatus(error.message, true); }
       }
@@ -198,6 +198,7 @@ $("expertMode").addEventListener("click", () => chooseMode("expert"));
 $("photoInputMode").addEventListener("click", () => setInputSource("photo"));
 $("voiceInputMode").addEventListener("click", () => setInputSource("voice"));
 $("recordButton").addEventListener("click", () => { if (recorder?.state === "recording") recorder.stop(); else startRecording(); });
+$("repeatVoiceButton").addEventListener("click", () => { setInputSource("voice"); $("voiceReviewNote").hidden = true; $("voicePanel").scrollIntoView({ behavior: "smooth" }); startRecording(); });
 $("gradeButton").addEventListener("click", openGradeDialog);
 $("closeGrade").addEventListener("click", () => { if (state.grade) $("gradeDialog").close(); });
 $("saveGradeButton").addEventListener("click", () => { state.grade = selectedGrade; localStorage.setItem("smartcat.grade", String(selectedGrade)); updateGrade(); $("gradeDialog").close(); });
@@ -215,7 +216,7 @@ $("scanButton").addEventListener("click", async () => {
   try {
     const form = new FormData(); form.append("image", state.image);
     const result = await callApi("/scan", form); state.tasks = result.tasks.map((task) => ({ ...task, selected: false })); renderTasks();
-    if (state.tasks.length) { $("tasksSection").hidden = false; showStatus(""); $("tasksSection").scrollIntoView({ behavior: "smooth" }); }
+    if (state.tasks.length) { $("voiceReviewNote").hidden = true; $("tasksSection").hidden = false; showStatus(""); $("tasksSection").scrollIntoView({ behavior: "smooth" }); }
     else showStatus("На фото не удалось найти задания. Попробуй сделать снимок ближе и при хорошем свете.", true);
   } catch (error) { showStatus(error.message, true); }
   finally { setBusy(button, false); }
