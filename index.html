@@ -9,41 +9,28 @@
   <link rel="icon" type="image/png" href="assets/cat.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-v2.css">
   <script src="config.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
-  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
   <div class="site-shell">
     <header class="topbar">
-      <a class="brand" href="#home" aria-label="SmartCat — на главную"><span class="brand-mark"><img src="assets/cat.png" alt=""></span><span>Smart<span class="brand-accent">Cat</span><small>ТВОЙ УМНЫЙ ПОМОЩНИК</small></span></a>
-      <nav class="top-actions" aria-label="Главное меню"><button class="nav-link" id="historyNav" type="button">История <span id="historyCount" class="nav-badge">0</span></button><button class="grade-chip" id="gradeButton" type="button" aria-label="Изменить класс"><span class="grade-dot"></span><span id="gradeLabel">Класс</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></nav>
+      <a class="brand" href="#home" aria-label="SmartCat — на главную"><span class="brand-mark"><img src="assets/cat.png" alt=""></span><span>Smart<span class="brand-accent">Cat</span></span></a>
+      <nav class="top-actions" aria-label="Главное меню"><button class="nav-link" id="historyNav" type="button">История <span id="historyCount" class="nav-badge">0</span></button><button class="grade-chip" id="gradeButton" type="button" aria-label="Изменить класс"><span id="gradeLabel">Класс</span></button></nav>
     </header>
 
     <main id="home">
-      <section class="hero" aria-labelledby="heroTitle">
-        <div class="hero-copy"><div class="eyebrow"><span class="eyebrow-line"></span> УЧИТЬСЯ СТАЛО ПРОЩЕ <span class="eyebrow-line"></span></div><h1 id="heroTitle">Решение<br><span>уже есть<span class="period">.</span></span></h1><p>Сфотографируй задание. Выбери нужное. Получи решение, которое действительно можно понять.</p><div class="hero-stats"><div><strong>01</strong><span>Загрузи фото</span></div><i></i><div><strong>02</strong><span>Выбери задание</span></div><i></i><div><strong>03</strong><span>Пойми решение</span></div></div></div>
-        <div class="hero-art" aria-hidden="true"><div class="art-ring ring-a"></div><div class="art-ring ring-b"></div><div class="art-ring ring-c"></div><div class="cat-glow"></div><img src="assets/cat.png" alt=""><span class="orbit-star star-a">✦</span><span class="orbit-star star-b">✧</span><span class="orbit-star star-c">✦</span><div class="art-caption"><span class="live-dot"></span> SMARTCAT В ДЕЛЕ <span>✳</span></div></div>
-      </section>
+      <section class="hero" aria-labelledby="heroTitle"><img class="hero-cat" src="assets/cat.png" alt=""><h1 id="heroTitle">Решение <span>уже есть.</span></h1><p>Сфотографируй задание — SmartCat найдёт его и поможет разобраться.</p></section>
 
-      <section class="workspace" aria-labelledby="workspaceTitle"><div class="section-heading"><div><span class="section-kicker">/ ТВОЁ ПРОСТРАНСТВО</span><h2 id="workspaceTitle">Начнём с задания</h2></div><span class="heading-aside">Всё начинается с одного фото ↘</span></div>
-        <div class="work-grid"><div class="main-card"><div class="card-header"><div><span class="step-index">01 / РЕЖИМ</span><h3>Как будем решать?</h3></div><span class="card-spark">✳</span></div>
-          <div class="mode-switch" role="group" aria-label="Режим решения"><button id="fastMode" class="mode active" type="button" aria-pressed="true"><span class="mode-icon fast-icon">⚡</span><span><strong>Быстрый</strong><small>Без ограничений</small></span><span class="mode-arrow">↗</span></button><button id="expertMode" class="mode" type="button" aria-pressed="false"><span class="mode-icon expert-icon">✦</span><span><strong>Эксперт</strong><small><span id="quotaText">5 из 5</span> заданий сегодня</small></span><span class="mode-arrow">↗</span></button></div>
-          <div class="card-divider"></div><div class="card-header upload-header"><div><span class="step-index">02 / ФОТО</span><h3>Покажи задание</h3></div><span class="format-text">JPG, PNG, WEBP · ДО 8 МБ</span></div>
-          <label class="upload-zone" id="dropZone" for="imageInput"><input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><span class="upload-symbol">↥</span><strong id="uploadTitle">Перетащи фото сюда</strong><span id="uploadSubtitle">или нажми, чтобы выбрать файл</span><span class="upload-button">Выбрать фото <span>↗</span></span><img id="photoPreview" class="photo-preview" alt="Предпросмотр загруженного задания" hidden></label>
-          <div class="privacy-note"><span>◈</span> Фото нужно только для распознавания. В истории оно не сохраняется.</div>
-          <div id="scanActions" class="scan-actions" hidden><button class="primary-button" id="scanButton" type="button">Найти задания <span>→</span></button><button class="text-button" id="changePhotoButton" type="button">Другое фото</button></div>
-          <div id="status" class="status" role="status" aria-live="polite" hidden></div>
-        </div><aside class="side-card"><div class="side-top"><span class="side-symbol">✦</span><span>КАК ЭТО РАБОТАЕТ</span></div><div class="side-steps"><div><span>01</span><p><strong>Сфотографируй</strong> страницу или отдельную задачу</p></div><div><span>02</span><p><strong>Выбери</strong> задания, которые нужно решить</p></div><div><span>03</span><p><strong>Разберись</strong> с ответом и попроси объяснить</p></div></div><div class="side-bottom">Меньше времени на поиски.<br><em>Больше — на понимание.</em></div></aside></div>
-      </section>
+      <section class="workspace" aria-labelledby="workspaceTitle"><div class="main-card"><h2 id="workspaceTitle">Новое задание</h2><div class="mode-switch" role="group" aria-label="Режим решения"><button id="fastMode" class="mode active" type="button" aria-pressed="true"><strong>Быстрый</strong><small>Без ограничений</small></button><button id="expertMode" class="mode" type="button" aria-pressed="false"><strong>Эксперт</strong><small><span id="quotaText">5 из 5</span> на сегодня</small></button></div><label class="upload-zone" id="dropZone" for="imageInput"><input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><span class="upload-symbol">↑</span><strong id="uploadTitle">Загрузи фото задания</strong><span id="uploadSubtitle">или перетащи сюда · JPG, PNG, WEBP</span><span class="upload-button">Выбрать фото</span><img id="photoPreview" class="photo-preview" alt="Предпросмотр загруженного задания" hidden></label><div class="privacy-note">Фото не сохраняется в истории</div><div id="scanActions" class="scan-actions" hidden><button class="primary-button" id="scanButton" type="button">Найти задания <span>→</span></button><button class="text-button" id="changePhotoButton" type="button">Другое фото</button></div><div id="status" class="status" role="status" aria-live="polite" hidden></div></div></section>
 
       <section id="tasksSection" class="results-section" hidden><div class="section-heading"><div><span class="section-kicker">/ МЫ НАШЛИ</span><h2>Задания на фото</h2></div><span class="heading-aside">Отметь то, что нужно решить</span></div><div class="results-card"><div id="taskList" class="task-list"></div><div class="results-footer"><span id="selectedCount">Выбрано: 0</span><button id="solveButton" class="primary-button" type="button" disabled>Решить выбранные <span>→</span></button></div></div></section>
 
       <section id="answersSection" class="results-section" hidden><div class="section-heading"><div><span class="section-kicker">/ ГОТОВО</span><h2>Решение + ответ</h2></div><span class="heading-aside">Сохраняется в истории на этом устройстве</span></div><div id="answerList" class="answer-list"></div></section>
     </main>
-    <footer><span>© 2026 SmartCat</span><span>Решение уже есть<span class="period">.</span></span><span>Сделано для тех, кто хочет разобраться ✦</span></footer>
+    <footer><span>© 2026 SmartCat</span><span>Решение уже есть.</span></footer>
   </div>
 
   <dialog id="gradeDialog" class="modal"><form method="dialog" class="modal-content"><button id="closeGrade" class="modal-close" value="cancel" aria-label="Закрыть" type="button">×</button><span class="section-kicker">/ ПЕРВАЯ НАСТРОЙКА</span><h2>Привет! В каком ты классе?</h2><p>Мы подберём объяснения под твой уровень. Класс всегда можно изменить.</p><div id="gradeGrid" class="grade-grid"></div><button id="saveGradeButton" class="primary-button" type="button" disabled>Продолжить <span>→</span></button></form></dialog>
