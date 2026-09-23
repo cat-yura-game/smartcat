@@ -25,7 +25,7 @@ function chooseMode(mode) {
   renderTasks();
 }
 let selectedGrade = 0;
-function openGradeDialog() { selectedGrade = state.grade; renderGradeGrid(); $("gradeDialog").showModal(); }
+function openGradeDialog() { selectedGrade = state.grade; $("closeGrade").hidden = !state.grade; renderGradeGrid(); $("gradeDialog").showModal(); }
 function renderGradeGrid() {
   const grid = $("gradeGrid"); grid.replaceChildren();
   for (let grade = 1; grade <= 9; grade++) {
@@ -123,6 +123,7 @@ function renderHistory() {
 $("fastMode").addEventListener("click", () => chooseMode("fast"));
 $("expertMode").addEventListener("click", () => chooseMode("expert"));
 $("gradeButton").addEventListener("click", openGradeDialog);
+$("closeGrade").addEventListener("click", () => { if (state.grade) $("gradeDialog").close(); });
 $("saveGradeButton").addEventListener("click", () => { state.grade = selectedGrade; localStorage.setItem("smartcat.grade", String(selectedGrade)); updateGrade(); $("gradeDialog").close(); });
 $("gradeDialog").addEventListener("cancel", (event) => { if (!state.grade) event.preventDefault(); });
 $("historyNav").addEventListener("click", () => { renderHistory(); $("historyDialog").showModal(); });
