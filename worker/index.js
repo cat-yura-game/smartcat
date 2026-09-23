@@ -1,6 +1,7 @@
 const FAST_MODEL = "gemini-3.5-flash-lite";
 const EXPERT_MODEL = "gemini-3.8-flash";
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 8 * 1024 * 1024;
 const MAX_TASK_LENGTH = 6000;
 
 function json(data, status = 200, origin = "*") {
@@ -25,6 +26,18 @@ function corsOrigin(request) {
 function extractText(data) {
   const parts = data?.candidates?.[0]?.content?.parts || [];
   return parts.filter((part) => typeof part.text === "string").map((part) => part.text).join("").trim();
+}
+
+function toBase64(bytes) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  return btoa(binary);
+}
+
+function normaliseTasks(data) {
+  return Array.isArray(data.tasks) ? data.tasks.slice(0, 20).filter((task) => typeof task.text === "string" && task.text.trim()).map((task, i) => ({
+    id: i + 1, number: String(task.number || i + 1).slice(0, 30), text: task.text.slice(0, MAX_TASK_LENGTH), subject: String(task.subject || "Задание").slice(0, 60),
+  })) : [];
 }
 
 async function generate(env, model, parts, schema) {
@@ -95,7 +108,7 @@ export default {
       },
     });
     if (request.method !== "POST") return json({ error: "Метод не поддерживается." }, 405, origin);
-    if (!['/scan', '/solve', '/explain'].includes(url.pathname)) return json({ error: "Раздел не найден." }, 404, origin);
+    if (!['/scan', '/voice', '/solve', '/explain'].includes(url.pathname)) return json({ error: "Раздел не найден." }, 404, origin);
     try {
       if (url.pathname === "/scan") {
         const length = Number(request.headers.get("content-length") || 0);
@@ -106,16 +119,28 @@ export default {
           return json({ error: "Нужна фотография JPG, PNG или WebP размером до 8 МБ." }, 400, origin);
         }
         const bytes = new Uint8Array(await file.arrayBuffer());
-        let binary = "";
-        for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
         const data = await generate(env, FAST_MODEL, [
           { text: "Найди на фотографии все отдельные учебные задания. Верни только видимые задания, сохрани их номера и формулировки точно и полно. Если текст неразборчив, не выдумывай его. Поле subject заполни названием предмета по-русски. Если заданий нет, верни пустой массив." },
-          { inline_data: { mime_type: file.type, data: btoa(binary) } },
+          { inline_data: { mime_type: file.type, data: toBase64(bytes) } },
         ], scanSchema);
-        const tasks = Array.isArray(data.tasks) ? data.tasks.slice(0, 20).filter((task) => typeof task.text === "string" && task.text.trim()).map((task, i) => ({
-          id: i + 1, number: String(task.number || i + 1).slice(0, 30), text: task.text.slice(0, MAX_TASK_LENGTH), subject: String(task.subject || "Задание").slice(0, 60),
-        })) : [];
-        return json({ tasks }, 200, origin);
+        return json({ tasks: normaliseTasks(data) }, 200, origin);
+      }
+      if (url.pathname === "/voice") {
+        const length = Number(request.headers.get("content-length") || 0);
+        if (length > MAX_AUDIO_BYTES + 10000) return json({ error: "Запись слишком большая. Попробуй сказать задание короче." }, 413, origin);
+        const form = await request.formData();
+        const file = form.get("audio");
+        const allowed = ["audio/webm", "audio/ogg", "audio/mp4", "audio/m4a", "audio/wav", "audio/mpeg"];
+        if (!(file instanceof File) || !allowed.includes(file.type) || file.size > MAX_AUDIO_BYTES || file.size === 0) {
+          return json({ error: "Не удалось прочитать запись. Попробуй записать ещё раз." }, 400, origin);
+        }
+        const mimeType = file.type === "audio/mp4" ? "audio/m4a" : file.type;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const data = await generate(env, FAST_MODEL, [
+          { text: "Прослушай запись ученика и выдели из речи отдельные учебные задания. Точно передай условия по-русски, сохрани произнесённые числа, формулы и номера. Не решай задания и не выдумывай недостающие данные. Поле subject заполни названием предмета по-русски. Если заданий нет или речь неразборчива, верни пустой массив." },
+          { inline_data: { mime_type: mimeType, data: toBase64(bytes) } },
+        ], scanSchema);
+        return json({ tasks: normaliseTasks(data) }, 200, origin);
       }
       if (Number(request.headers.get("content-length") || 0) > 15000) return json({ error: "Слишком длинное задание." }, 413, origin);
       const body = await request.json();

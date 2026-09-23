@@ -24,6 +24,79 @@ function chooseMode(mode) {
   }
   renderTasks();
 }
+let inputSource = "photo";
+let recorder = null;
+let recordingTimer = null;
+let recordingStarted = 0;
+function setInputSource(source) {
+  if (recorder?.state === "recording") { showStatus("Сначала останови запись.", true); return; }
+  inputSource = source;
+  for (const [id, value] of [["photoInputMode", "photo"], ["voiceInputMode", "voice"]]) {
+    const active = source === value;
+    $(id).classList.toggle("active", active);
+    $(id).setAttribute("aria-pressed", String(active));
+  }
+  $("photoPanel").hidden = source !== "photo";
+  $("voicePanel").hidden = source !== "voice";
+  showStatus("");
+}
+function updateRecordingTimer() {
+  const seconds = Math.floor((Date.now() - recordingStarted) / 1000);
+  $("recordTimer").textContent = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  if (seconds >= 60 && recorder?.state === "recording") recorder.stop();
+}
+async function startRecording() {
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+    showStatus("Этот браузер не поддерживает запись голоса. Открой сайт в Chrome, Edge или Safari.", true);
+    return;
+  }
+  const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type));
+  if (!mimeType) { showStatus("Этот браузер не поддерживает подходящий формат аудио.", true); return; }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch { showStatus("Не удалось включить микрофон. Проверь разрешение для сайта в браузере.", true); return; }
+  const chunks = [];
+  try {
+    recorder = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 64000 });
+    recorder.addEventListener("dataavailable", (event) => { if (event.data.size) chunks.push(event.data); });
+    recorder.addEventListener("stop", async () => {
+      stream.getTracks().forEach((track) => track.stop());
+      clearInterval(recordingTimer); recordingTimer = null;
+      $("voicePanel").querySelector(".voice-zone").classList.remove("recording");
+      $("recordButton").disabled = true; $("recordButton").textContent = "Распознаём...";
+      const type = mimeType.startsWith("audio/mp4") ? "audio/mp4" : "audio/webm";
+      const blob = new Blob(chunks, { type });
+      if (blob.size < 1000) { showStatus("Запись слишком короткая. Попробуй сказать задание ещё раз.", true); }
+      else if (blob.size > 8 * 1024 * 1024) { showStatus("Запись слишком большая. Попробуй сказать задание короче.", true); }
+      else {
+        try {
+          showStatus("Распознаём сказанные задания...");
+          const form = new FormData(); form.append("audio", new File([blob], type === "audio/mp4" ? "task.m4a" : "task.webm", { type }));
+          const result = await callApi("/voice", form);
+          state.tasks = result.tasks.map((task) => ({ ...task, selected: false })); renderTasks();
+          if (state.tasks.length) { $("tasksSection").hidden = false; showStatus(""); $("tasksSection").scrollIntoView({ behavior: "smooth" }); }
+          else showStatus("Не удалось услышать задание. Попробуй записать ещё раз в тихом месте.", true);
+        } catch (error) { showStatus(error.message, true); }
+      }
+      $("recordButton").disabled = false; $("recordButton").textContent = "Начать запись";
+      $("recordHint").textContent = "Нажми на кнопку и говори до 60 секунд";
+      $("recordTimer").hidden = true;
+      recorder = null;
+    });
+    recorder.start();
+    recordingStarted = Date.now();
+    recordingTimer = setInterval(updateRecordingTimer, 1000);
+    $("recordTimer").textContent = "00:00"; $("recordTimer").hidden = false;
+    $("recordHint").textContent = "Идёт запись. Нажми, когда закончишь.";
+    $("recordButton").textContent = "Остановить запись";
+    $("voicePanel").querySelector(".voice-zone").classList.add("recording");
+    $("tasksSection").hidden = true; $("answersSection").hidden = true; state.tasks = []; state.answers = []; showStatus("");
+  } catch {
+    stream.getTracks().forEach((track) => track.stop());
+    recorder = null;
+    showStatus("Не удалось начать запись. Попробуй ещё раз.", true);
+  }
+}
 let selectedGrade = 0;
 function openGradeDialog() { selectedGrade = state.grade; $("closeGrade").hidden = !state.grade; renderGradeGrid(); $("gradeDialog").showModal(); }
 function renderGradeGrid() {
@@ -122,6 +195,9 @@ function renderHistory() {
 
 $("fastMode").addEventListener("click", () => chooseMode("fast"));
 $("expertMode").addEventListener("click", () => chooseMode("expert"));
+$("photoInputMode").addEventListener("click", () => setInputSource("photo"));
+$("voiceInputMode").addEventListener("click", () => setInputSource("voice"));
+$("recordButton").addEventListener("click", () => { if (recorder?.state === "recording") recorder.stop(); else startRecording(); });
 $("gradeButton").addEventListener("click", openGradeDialog);
 $("closeGrade").addEventListener("click", () => { if (state.grade) $("gradeDialog").close(); });
 $("saveGradeButton").addEventListener("click", () => { state.grade = selectedGrade; localStorage.setItem("smartcat.grade", String(selectedGrade)); updateGrade(); $("gradeDialog").close(); });
